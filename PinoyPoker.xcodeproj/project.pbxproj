@@ -15,6 +15,7 @@
 		D881212F2A827A5400711317 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D881212D2A827A5400711317 /* LaunchScreen.storyboard */; };
 		D881213A2A827A5500711317 /* PinoyPokerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88121392A827A5500711317 /* PinoyPokerTests.swift */; };
 		D88121452A827A5500711317 /* PinoyPokerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88121442A827A5500711317 /* PinoyPokerUITests.swift */; };
+		D88121532A8293FE00711317 /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88121522A8293FE00711317 /* UIViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		D88121402A827A5500711317 /* PinoyPokerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PinoyPokerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D88121442A827A5500711317 /* PinoyPokerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinoyPokerUITests.swift; sourceTree = "<group>"; };
 		D88121462A827A5500711317 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D88121522A8293FE00711317 /* UIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				D88121222A827A5300711317 /* AppDelegate.swift */,
+				D88121522A8293FE00711317 /* UIViewController.swift */,
 				D88121242A827A5400711317 /* SceneDelegate.swift */,
 				D88121262A827A5400711317 /* ViewController.swift */,
 				D88121282A827A5400711317 /* Main.storyboard */,
@@ -260,6 +263,7 @@
 			files = (
 				D88121272A827A5400711317 /* ViewController.swift in Sources */,
 				D88121232A827A5400711317 /* AppDelegate.swift in Sources */,
+				D88121532A8293FE00711317 /* UIViewController.swift in Sources */,
 				D88121252A827A5400711317 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

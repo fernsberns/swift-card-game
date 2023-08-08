@@ -61,47 +61,154 @@ class ViewController: UIViewController {
         ]
 
     var P1Hand: [Int] = [37, 9, 11, 38, 27, 6, 13, 46, 5, 33, 48, 50, 39]
+    var GameID: Int = 0
+
     override func viewDidLoad() {
             super.viewDidLoad()
+        setupUI()
 
-            createRoomAndLoadUI()
+        }
+    
+    
+    
+    func setupUI() {
+            let createGameButton = UIButton(type: .system)
+            createGameButton.setTitle("Deal Cards", for: .normal)
+            createGameButton.addTarget(self, action: #selector(createGameButtonTapped), for: .touchUpInside)
+            createGameButton.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+            createGameButton.center = CGPoint(x: view.center.x - 100, y: view.center.y - 200)
+            view.addSubview(createGameButton)
+        
+
+
+            let joinGameButton = UIButton(type: .system)
+            joinGameButton.setTitle("Join Game", for: .normal)
+            joinGameButton.addTarget(self, action: #selector(joinGameButtonTapped), for: .touchUpInside)
+            joinGameButton.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+            joinGameButton.center = CGPoint(x: view.center.x - 100, y: view.center.y - 150)
+            view.addSubview(joinGameButton)
         }
 
-        func createRoomAndLoadUI() {
-            createRoom { [weak self] player1hand in
-                self?.P1Hand = player1hand
-                DispatchQueue.main.async {
-                    self?.loadUI()
-                }
+    @objc func createGameButtonTapped() {
+        // Handle create game button tap
+        removePreviousCards()
+        createRoomAndLoadUI { [weak self] in
+            self?.displayLabelWithCompletion()
+        }
+    }
+
+    func removePreviousCards() {
+        for subview in view.subviews {
+            if subview is UIImageView {
+                subview.removeFromSuperview()
             }
         }
+    }
 
-        func loadUI() {
-            let cardWidth: CGFloat = 10
-            let cardHeight: CGFloat = 15
-            let spacing: CGFloat = 2
-            let startX: CGFloat = (view.bounds.width - (cardWidth * 4 + spacing * 3)) / 2
-            let startY: CGFloat = (view.bounds.height - cardHeight) / 2
+    func displayLabelWithCompletion() {
+        let label = UILabel(frame: CGRect(x: 0, y: -200, width: 200, height: 30))
+        label.text = "Room: \(GameID)"
+        label.textAlignment = .center
+        label.backgroundColor = .white
+        label.layer.borderColor = UIColor.black.cgColor
+        label.layer.borderWidth = 1.0
+        label.layer.cornerRadius = 5.0
+        label.clipsToBounds = true
+        let xOffsetPercentage: CGFloat = 0 // 10% of the screen's width
+        let yOffsetPercentage: CGFloat = 0.4 // 40% of the screen's height
 
-            for cardId in P1Hand {
-                if let cardData = cards.first(where: { ($0["id"] as? Int) == cardId }),
-                   let name = cardData["name"] as? String {
-                    let imageName = "\(name).png"
-                    if let image = UIImage(named: imageName),
-                       let cardIndex = P1Hand.firstIndex(of: cardId) {
-                        let imageView = UIImageView(image: image)
-                        imageView.frame = CGRect(x: startX + CGFloat(cardIndex % 13) * (cardWidth + spacing),
-                                                 y: startY,
-                                                 width: cardWidth,
-                                                 height: cardHeight)
-                        view.addSubview(imageView)
+        let xOffset = view.bounds.width * xOffsetPercentage
+        let yOffset = view.bounds.height * yOffsetPercentage
+
+        label.center = CGPoint(x: view.center.x + xOffset, y: view.center.y - yOffset);        view.addSubview(label)
+    }
+
+    
+    
+
+
+
+
+
+        @objc func joinGameButtonTapped() {
+            // Handle join game button tap
+            // Implement your logic for joining a game here
+        }
+
+    func createRoomAndLoadUI(completion: @escaping () -> Void) {
+        createRoom { [weak self] player1hand, gameroomid in
+            self?.P1Hand = player1hand
+            self?.GameID = gameroomid
+            DispatchQueue.main.async {
+                self?.loadUI()
+                completion() // Call the completion handler here
+            }
+        }
+    }
+
+
+    func loadUI() {
+        let cardWidth: CGFloat = 40
+        let cardHeight: CGFloat = 60
+        let spacing: CGFloat = 15
+        let margin: CGFloat = 0 // Adjust this value for the desired margin
+        let startX: CGFloat = (view.bounds.width - (cardWidth * 5 + spacing * 4)) / 2
+        let startYTop: CGFloat = (view.bounds.height - cardHeight * 2 - spacing * 2) / 2
+        let startYMiddle: CGFloat = startYTop + cardHeight * 1.5 + spacing
+        let startYBottom: CGFloat = startYMiddle + cardHeight * 1.5 + spacing * 2
+
+        var currentX: CGFloat = startX
+        var currentY: CGFloat = startYTop
+
+        var cardsCount = 0
+
+        for cardId in P1Hand {
+            if let cardData = cards.first(where: { ($0["id"] as? Int) == cardId }),
+               let name = cardData["name"] as? String {
+                let imageName = "\(name).png"
+                if let image = UIImage(named: imageName) {
+                    let imageView = UIImageView(image: image)
+                    imageView.frame = CGRect(x: currentX + margin, y: currentY + margin, width: cardWidth - 2 * margin, height: cardHeight - 2 * margin)
+                    imageView.layer.borderWidth = 2.0 // Add a border
+                    imageView.layer.borderColor = UIColor.black.cgColor
+                    imageView.layer.cornerRadius = 5.0
+                    imageView.clipsToBounds = true
+                    view.addSubview(imageView)
+
+                    // Add pan gesture recognizer for draggable behavior
+                    let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+                    imageView.addGestureRecognizer(panGesture)
+                    imageView.isUserInteractionEnabled = true
+
+                    cardsCount += 1
+                    if cardsCount == 3 {
+                        currentX = startX
+                        currentY = startYMiddle
+                    } else if cardsCount == 8 {
+                        currentX = startX
+                        currentY = startYBottom
+                    } else {
+                        currentX += cardWidth + spacing
                     }
                 }
             }
         }
+    }
 
-        func createRoom(completion: @escaping ([Int]) -> Void) {
-            guard let url = URL(string: "http://192.168.0.8:3000/api/create-room") else {
+    @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+        guard let cardImageView = gesture.view else { return }
+        
+        if gesture.state == .began || gesture.state == .changed {
+            let translation = gesture.translation(in: view)
+            cardImageView.center = CGPoint(x: cardImageView.center.x + translation.x, y: cardImageView.center.y + translation.y)
+            gesture.setTranslation(CGPoint.zero, in: view)
+        }
+    }
+
+
+    func createRoom(completion: @escaping ([Int], Int) -> Void) {
+            guard let url = URL(string: "http://192.168.0.8:3000/api/create-room")
+            else {
                 return
             }
 
@@ -119,9 +226,12 @@ class ViewController: UIViewController {
                     do {
                         if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]],
                            let jsonData = jsonArray.first,
+                           let gameroomid = jsonData["gameroomid"] as? Int,
                            let player1hand = jsonData["player1hand"] as? [Int] {
                             print(player1hand)
-                            completion(player1hand)
+                            print("Game Room ID: \(gameroomid)")
+
+                            completion(player1hand, gameroomid)
                         }
                     } catch {
                         print("Error parsing JSON: \(error)")
