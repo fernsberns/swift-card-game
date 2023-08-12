@@ -321,7 +321,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
 
 
     func createRoom(completion: @escaping ([Int], Int) -> Void) {
-            guard let url = URL(string: "http://192.168.0.8:3000/api/create-room")
+            guard let url = URL(string: "https://swiftcardgameserver-5enxm.ondigitalocean.app/api/create-room")
             else {
                 return
             }
@@ -359,7 +359,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
 //        let gameroomid = self.gameroomid // Use the updated value
         guard let gameroomidText = textField.text,
                   let gameroomid = Int(gameroomidText),
-                  let url = URL(string: "http://192.168.0.8:3000/api/join-room?gameroomid=\(storedText)")
+                  let url = URL(string: "https://swiftcardgameserver-5enxm.ondigitalocean.app/api/join-room?gameroomid=\(storedText)")
                     
             else {
                 return
