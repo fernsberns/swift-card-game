@@ -1,6 +1,10 @@
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITextFieldDelegate {
+
+    var textField: UITextField!
+    var gameroomid: Int = 1141 // Declare the gameroomid property
+
 
     let cards: [[String: Any]] = [
             ["id": 1, "name": "cardDiamonds_A"],
@@ -62,41 +66,105 @@ class ViewController: UIViewController {
 
     var P1Hand: [Int] = [37, 9, 11, 38, 27, 6, 13, 46, 5, 33, 48, 50, 39]
     var GameID: Int = 0
+    
+    
+    var textField1: UITextField!
+    var storeButton: UIButton!
+
+    // Variable to store the text
+    var storedText: String = ""
 
     override func viewDidLoad() {
             super.viewDidLoad()
+        
+
+        // Create and configure the button
+        
+        displayLabelWithCompletion()
+        let backgroundImage = UIImageView(image: UIImage(named: "BackgroundImage")) // Change "BackgroundImage" to the actual name of your background image
+           backgroundImage.frame = view.bounds
+           backgroundImage.contentMode = .scaleAspectFill
+           view.insertSubview(backgroundImage, at: 0)
+
         setupUI()
 
         }
     
-    
-    
+
     func setupUI() {
-            let createGameButton = UIButton(type: .system)
-            createGameButton.setTitle("Deal Cards", for: .normal)
-            createGameButton.addTarget(self, action: #selector(createGameButtonTapped), for: .touchUpInside)
-            createGameButton.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
-            createGameButton.center = CGPoint(x: view.center.x - 100, y: view.center.y - 200)
-            view.addSubview(createGameButton)
         
+        textField = UITextField(frame: CGRect(x: 0, y: -200, width: 200, height: 30))
+        textField.delegate = self // Set the delegate
+        textField.text = "\(GameID)"
+        
+
+        let createGameButton = UIButton(type: .system)
+        createGameButton.setTitle("Deal Cards", for: .normal)
+        createGameButton.setTitleColor(.white, for: .normal) // Set text color to white
+        createGameButton.backgroundColor = .black // Set background color to black
+        createGameButton.addTarget(self, action: #selector(createGameButtonTapped), for: .touchUpInside)
+        createGameButton.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        createGameButton.center = CGPoint(x: view.center.x, y: view.center.y * 0.4)
+        createGameButton.layer.cornerRadius = 5.0
+        createGameButton.clipsToBounds = true
+        view.addSubview(createGameButton)
 
 
             let joinGameButton = UIButton(type: .system)
             joinGameButton.setTitle("Join Game", for: .normal)
             joinGameButton.addTarget(self, action: #selector(joinGameButtonTapped), for: .touchUpInside)
             joinGameButton.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
-            joinGameButton.center = CGPoint(x: view.center.x - 100, y: view.center.y - 150)
+        joinGameButton.center = CGPoint(x: view.center.x, y: view.center.y * 0.525)
+            joinGameButton.setTitleColor(.white, for: .normal) // Set text color to white
+            joinGameButton.backgroundColor = .black // Set background color to black
+            joinGameButton.layer.cornerRadius = 5.0
+
+        
             view.addSubview(joinGameButton)
-        }
+        
+        textField1 = UITextField(frame: CGRect(x: view.center.x * 0.5, y: view.center.y * 0.6, width: 200, height: 50))
+        textField1.placeholder = "ENTER ROOM ID"// Set the delegate
+        textField1.borderStyle = .roundedRect
+        //textField1.text = "\(GameID)"
+        view.addSubview(textField1)
+        
+    }
 
     @objc func createGameButtonTapped() {
         // Handle create game button tap
         removePreviousCards()
+        let backgroundImage = UIImageView(image: UIImage(named: "BackgroundImage")) // Change "BackgroundImage" to the actual name of your background image
+           backgroundImage.frame = view.bounds
+           backgroundImage.contentMode = .scaleAspectFill
+           view.insertSubview(backgroundImage, at: 0)
+
         createRoomAndLoadUI { [weak self] in
             self?.displayLabelWithCompletion()
         }
     }
 
+    @objc func joinGameButtonTapped() {
+        // Handle create game button tap
+        if let inputText = textField1.text {
+            // Store the text in the variable
+            storedText = inputText
+            
+            // Print the stored text to the console
+            print("Stored Text: \(storedText)")
+        }
+        removePreviousCards()
+        let backgroundImage = UIImageView(image: UIImage(named: "BackgroundImage")) // Change "BackgroundImage" to the actual name of your background image
+           backgroundImage.frame = view.bounds
+           backgroundImage.contentMode = .scaleAspectFill
+           view.insertSubview(backgroundImage, at: 0)
+
+        
+        joinRoomAndLoadUI { [weak self] in
+            
+            self?.displayLabelWithCompletion()
+        }
+    }
+    
     func removePreviousCards() {
         for subview in view.subviews {
             if subview is UIImageView {
@@ -104,23 +172,53 @@ class ViewController: UIViewController {
             }
         }
     }
+    // Implement UITextFieldDelegate method for handling text changes
+//    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+//        // Calculate the new text after applying the replacement
+//        let newText = (textField.text as NSString?)?.replacingCharacters(in: range, with: string)
+//        // Update the text field's text with the new text
+//        textField.text = newText
+//        return false // Return false to allow the changes
+//    }
+//
+    
+//    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+//        // Construct the updated text after the replacement
+//        let newText = (textField.text as NSString?)?.replacingCharacters(in: range, with: string)
+//        
+//        // Try to convert the updated text to an integer
+//        if let newGameroomid = Int(newText ?? "") {
+//            gameroomid = newGameroomid // Update the gameroomid variable
+//        }
+//        
+//        return true
+//    }
+
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if let gameroomidText = textField.text,
+           let newGameroomid = Int(gameroomidText) {
+            gameroomid = newGameroomid // Update the gameroomid variable
+        }
+    }
 
     func displayLabelWithCompletion() {
-        let label = UILabel(frame: CGRect(x: 0, y: -200, width: 200, height: 30))
-        label.text = "Room: \(GameID)"
-        label.textAlignment = .center
-        label.backgroundColor = .white
-        label.layer.borderColor = UIColor.black.cgColor
-        label.layer.borderWidth = 1.0
-        label.layer.cornerRadius = 5.0
-        label.clipsToBounds = true
+        let textField = UILabel(frame: CGRect(x: 0, y: -200, width: 200, height: 30))
+//        textField.delegate = self // Set the delegate
+        textField.text = "Room ID: \(GameID)"
+        textField.textAlignment = .center
+        textField.textColor = .white
+        textField.backgroundColor = .black
+//        textField.layer.borderColor = UIColor.black.cgColor
+        textField.layer.borderWidth = 1.0
+        textField.layer.cornerRadius = 5.0
+        textField.clipsToBounds = true
         let xOffsetPercentage: CGFloat = 0 // 10% of the screen's width
         let yOffsetPercentage: CGFloat = 0.4 // 40% of the screen's height
 
         let xOffset = view.bounds.width * xOffsetPercentage
         let yOffset = view.bounds.height * yOffsetPercentage
 
-        label.center = CGPoint(x: view.center.x + xOffset, y: view.center.y - yOffset);        view.addSubview(label)
+        textField.center = CGPoint(x: view.center.x + xOffset, y: view.center.y - yOffset);        view.addSubview(textField)
     }
 
     
@@ -130,13 +228,27 @@ class ViewController: UIViewController {
 
 
 
-        @objc func joinGameButtonTapped() {
-            // Handle join game button tap
-            // Implement your logic for joining a game here
-        }
+//        @objc func joinGameButtonTapped() {
+//            // Handle join game button tap
+//            // Implement your logic for joining a game here
+//        }
 
     func createRoomAndLoadUI(completion: @escaping () -> Void) {
         createRoom { [weak self] player1hand, gameroomid in
+            self?.P1Hand = player1hand
+            self?.GameID = gameroomid
+            DispatchQueue.main.async {
+                self?.loadUI()
+                completion() // Call the completion handler here
+            }
+        }
+    }
+    func joinRoomAndLoadUI(completion: @escaping () -> Void) {
+        guard textField != nil else {
+            print("TextField is not initialized")
+            return
+        }
+        joinRoom { [weak self] player1hand, gameroomid in
             self?.P1Hand = player1hand
             self?.GameID = gameroomid
             DispatchQueue.main.async {
@@ -155,7 +267,7 @@ class ViewController: UIViewController {
         let startX: CGFloat = (view.bounds.width - (cardWidth * 5 + spacing * 4)) / 2
         let startYTop: CGFloat = (view.bounds.height - cardHeight * 2 - spacing * 2) / 2
         let startYMiddle: CGFloat = startYTop + cardHeight * 1.5 + spacing
-        let startYBottom: CGFloat = startYMiddle + cardHeight * 1.5 + spacing * 2
+        let startYBottom: CGFloat = startYMiddle + cardHeight * 1.5 + spacing
 
         var currentX: CGFloat = startX
         var currentY: CGFloat = startYTop
@@ -169,6 +281,8 @@ class ViewController: UIViewController {
                 if let image = UIImage(named: imageName) {
                     let imageView = UIImageView(image: image)
                     imageView.frame = CGRect(x: currentX + margin, y: currentY + margin, width: cardWidth - 2 * margin, height: cardHeight - 2 * margin)
+                    imageView.backgroundColor = UIColor.white
+
                     imageView.layer.borderWidth = 2.0 // Add a border
                     imageView.layer.borderColor = UIColor.black.cgColor
                     imageView.layer.cornerRadius = 5.0
@@ -231,6 +345,75 @@ class ViewController: UIViewController {
                             print(player1hand)
                             print("Game Room ID: \(gameroomid)")
 
+                            completion(player1hand, gameroomid)
+                        }
+                    } catch {
+                        print("Error parsing JSON: \(error)")
+                        let responseString = String(data: data, encoding: .utf8)
+                        print("Response Data: \(responseString ?? "")")
+                    }
+                }
+            }.resume()
+        }
+    func joinRoom(completion: @escaping ([Int], Int) -> Void) {
+//        let gameroomid = self.gameroomid // Use the updated value
+        guard let gameroomidText = textField.text,
+                  let gameroomid = Int(gameroomidText),
+                  let url = URL(string: "http://192.168.0.8:3000/api/join-room?gameroomid=\(storedText)")
+                    
+            else {
+                return
+            }
+        print(gameroomid)
+        print(url)
+
+
+
+            URLSession.shared.dataTask(with: url) { (data, response, error) in
+                if let error = error {
+                    print("Error: \(error)")
+                    return
+                }
+
+                if let httpResponse = response as? HTTPURLResponse {
+                    print("HTTP Status Code: \(httpResponse.statusCode)")
+                }
+                
+                //print("\(data)")
+                
+                if let data = data {
+                    do {
+                        if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]],
+                           let jsonData = jsonArray.first,
+                           let gameroomid = jsonData["gameroomid"] as? Int {
+                            
+                            var player1hand: [Int] = []
+                            if let player2handArray = jsonData["player2hand"] as? [Int] {
+                                player1hand = player2handArray
+                            }
+                            
+                            var player3hand: [Int] = []
+                            if let player3handArray = jsonData["player3hand"] as? [Int] {
+                                player3hand = player3handArray
+                            }
+                            
+                            var player4hand: [Int] = []
+                            if let player4handArray = jsonData["player4hand"] as? [Int] {
+                                player4hand = player4handArray
+                            }
+                            
+                            print("player2: \(player1hand)")
+                            print("player3: \(player3hand)")
+                            print("player4: \(player4hand)")
+                            print("Game Room ID: \(gameroomid)")
+                            
+                            if player1hand == [] {
+                                player1hand = player3hand
+                                if player3hand == [] {
+                                    player1hand = player4hand
+                                }
+                            }
+                            
                             completion(player1hand, gameroomid)
                         }
                     } catch {
