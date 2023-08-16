@@ -2,6 +2,15 @@ import UIKit
 
 class ViewController: UIViewController, UITextFieldDelegate {
 
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return .portrait
+        
+    }
+    
+    override var shouldAutorotate: Bool {
+        return false
+    }
+    
     var textField: UITextField!
     var gameroomid: Int = 1141 // Declare the gameroomid property
 
@@ -93,17 +102,17 @@ class ViewController: UIViewController, UITextFieldDelegate {
 
     func setupUI() {
         
-        textField = UITextField(frame: CGRect(x: 0, y: -200, width: 200, height: 30))
+        textField = UITextField(frame: CGRect(x: 0, y: -200, width: view.center.x , height: 30))
         textField.delegate = self // Set the delegate
         textField.text = "\(GameID)"
         
 
         let createGameButton = UIButton(type: .system)
-        createGameButton.setTitle("Deal Cards", for: .normal)
+        createGameButton.setTitle("New Game", for: .normal)
         createGameButton.setTitleColor(.white, for: .normal) // Set text color to white
         createGameButton.backgroundColor = .black // Set background color to black
         createGameButton.addTarget(self, action: #selector(createGameButtonTapped), for: .touchUpInside)
-        createGameButton.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+        createGameButton.frame = CGRect(x: 0, y: 0, width: view.center.x, height: 50)
         createGameButton.center = CGPoint(x: view.center.x, y: view.center.y * 0.4)
         createGameButton.layer.cornerRadius = 5.0
         createGameButton.clipsToBounds = true
@@ -113,7 +122,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
             let joinGameButton = UIButton(type: .system)
             joinGameButton.setTitle("Join Game", for: .normal)
             joinGameButton.addTarget(self, action: #selector(joinGameButtonTapped), for: .touchUpInside)
-            joinGameButton.frame = CGRect(x: 0, y: 0, width: 200, height: 50)
+            joinGameButton.frame = CGRect(x: 0, y: 0, width: view.center.x , height: 50)
         joinGameButton.center = CGPoint(x: view.center.x, y: view.center.y * 0.525)
             joinGameButton.setTitleColor(.white, for: .normal) // Set text color to white
             joinGameButton.backgroundColor = .black // Set background color to black
@@ -122,7 +131,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
             view.addSubview(joinGameButton)
         
-        textField1 = UITextField(frame: CGRect(x: view.center.x * 0.5, y: view.center.y * 0.6, width: 200, height: 50))
+        textField1 = UITextField(frame: CGRect(x: view.center.x * 0.5, y: view.center.y * 0.6, width: view.center.x, height: 50))
         textField1.placeholder = "ENTER ROOM ID"// Set the delegate
         textField1.borderStyle = .roundedRect
         //textField1.text = "\(GameID)"
@@ -144,27 +153,43 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
 
     @objc func joinGameButtonTapped() {
-        // Handle create game button tap
-        if let inputText = textField1.text {
-            // Store the text in the variable
-            storedText = inputText
-            
-            // Print the stored text to the console
-            print("Stored Text: \(storedText)")
+        // Hide the keyboard
+        textField1.resignFirstResponder()
+
+        // Check if the textField1 is empty
+        guard let inputText = textField1.text, !inputText.isEmpty else {
+            // Show an alert with an error message
+            let alert = UIAlertController(title: "Error", message: "Please provide a room ID", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
         }
+
+        // Store the text in the variable
+        storedText = inputText
+
+        // Print the stored text to the console
+        print("Stored Text: \(storedText)")
+
         removePreviousCards()
         let backgroundImage = UIImageView(image: UIImage(named: "BackgroundImage")) // Change "BackgroundImage" to the actual name of your background image
-           backgroundImage.frame = view.bounds
-           backgroundImage.contentMode = .scaleAspectFill
-           view.insertSubview(backgroundImage, at: 0)
+        backgroundImage.frame = view.bounds
+        backgroundImage.contentMode = .scaleAspectFill
+        view.insertSubview(backgroundImage, at: 0)
 
-        
         joinRoomAndLoadUI { [weak self] in
-            
             self?.displayLabelWithCompletion()
         }
     }
-    
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField1.resignFirstResponder() // Hide the keyboard
+        return true
+    }
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        view.endEditing(true) // Hide the keyboard
+    }
+
     func removePreviousCards() {
         for subview in view.subviews {
             if subview is UIImageView {
@@ -218,7 +243,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
         let xOffset = view.bounds.width * xOffsetPercentage
         let yOffset = view.bounds.height * yOffsetPercentage
 
-        textField.center = CGPoint(x: view.center.x + xOffset, y: view.center.y - yOffset);        view.addSubview(textField)
+        textField.center = CGPoint(x: view.center.x + xOffset, y: view.center.y - yOffset);
+        view.addSubview(textField)
     }
 
     
@@ -260,8 +286,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
 
 
     func loadUI() {
-        let cardWidth: CGFloat = 40
-        let cardHeight: CGFloat = 60
+        let cardWidth: CGFloat = view.bounds.width * 0.13
+        let cardHeight: CGFloat = cardWidth * 1.5
         let spacing: CGFloat = 15
         let margin: CGFloat = 0 // Adjust this value for the desired margin
         let startX: CGFloat = (view.bounds.width - (cardWidth * 5 + spacing * 4)) / 2
@@ -376,6 +402,15 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 }
 
                 if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode == 404{
+                        DispatchQueue.main.async {
+                            // Show an alert indicating that the room does not exist
+                            let alert = UIAlertController(title: "Error", message: "Room does not exist", preferredStyle: .alert)
+                            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                            self.present(alert, animated: true, completion: nil)
+                            
+                        }
+                    }
                     print("HTTP Status Code: \(httpResponse.statusCode)")
                 }
                 
