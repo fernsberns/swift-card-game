@@ -284,66 +284,138 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
     }
 
-
+    
+    var spotViews: [UIView] = []
+    
+    
     func loadUI() {
         let cardWidth: CGFloat = view.bounds.width * 0.13
         let cardHeight: CGFloat = cardWidth * 1.5
-        let spacing: CGFloat = 15
-        let margin: CGFloat = 0 // Adjust this value for the desired margin
-        let startX: CGFloat = (view.bounds.width - (cardWidth * 5 + spacing * 4)) / 2
-        let startYTop: CGFloat = (view.bounds.height - cardHeight * 2 - spacing * 2) / 2
-        let startYMiddle: CGFloat = startYTop + cardHeight * 1.5 + spacing
-        let startYBottom: CGFloat = startYMiddle + cardHeight * 1.5 + spacing
+        let overlap: CGFloat = 25 // Adjust the overlap between cards
+
+        let totalSpots = 13
+        let totalRows = [3, 5, 5]
+        let spotWidth: CGFloat = view.bounds.width * 0.13
+
+        // Calculate the starting X position to center the spots
+        let startX = (view.bounds.width - CGFloat(totalRows[0]) * spotWidth - CGFloat(totalRows[0] - 1) * overlap) / 2
 
         var currentX: CGFloat = startX
-        var currentY: CGFloat = startYTop
+        var currentY: CGFloat = 20 // Adjust the initial Y position as needed
+        var currentRow = 0 // Track the current row
 
-        var cardsCount = 0
+        // Create spots for cards and add them to the array
+        for _ in 0..<totalSpots {
+            let spotView = UIView()
+            spotView.frame = CGRect(x: currentX-80, y: currentY+400, width: spotWidth, height: cardHeight)
+            spotView.layer.borderWidth = 2.0
+            spotView.layer.borderColor = UIColor.darkGray.cgColor
+            view.addSubview(spotView)
+            spotViews.append(spotView) // Add the spotView to the class-level array
 
-        for cardId in P1Hand {
+            currentX += spotWidth + overlap
+
+            if currentRow < totalRows.count - 1 && (currentX + cardWidth) > (startX + CGFloat(totalRows[currentRow]) * spotWidth + CGFloat(totalRows[currentRow]) * overlap) {
+                // Move to the next row
+                currentRow += 1
+                currentX = startX
+                currentY += cardHeight + 10 // Adjust the vertical spacing between rows as needed
+            }
+        }
+        
+//        print("Number of spotViews: \(spotViews.count)") // Debugging statement
+//        print(spotViews)
+
+
+        // Your existing code for displaying cards at the bottom
+        let totalCards = P1Hand.count
+        let totalWidth = CGFloat(totalCards) * (cardWidth - overlap) + overlap
+        let cardsStartX = (view.bounds.width - totalWidth) / 2
+        var cardsCurrentX: CGFloat = cardsStartX
+        let cardsStartY: CGFloat = view.bounds.height - cardHeight - 20
+        var elevationOffset: CGFloat = 0
+
+        for (index, cardId) in P1Hand.enumerated() {
             if let cardData = cards.first(where: { ($0["id"] as? Int) == cardId }),
                let name = cardData["name"] as? String {
                 let imageName = "\(name).png"
                 if let image = UIImage(named: imageName) {
                     let imageView = UIImageView(image: image)
-                    imageView.frame = CGRect(x: currentX + margin, y: currentY + margin, width: cardWidth - 2 * margin, height: cardHeight - 2 * margin)
+                    imageView.frame = CGRect(x: cardsCurrentX, y: cardsStartY - elevationOffset, width: cardWidth, height: cardHeight)
                     imageView.backgroundColor = UIColor.white
-
-                    imageView.layer.borderWidth = 2.0 // Add a border
+                    imageView.layer.borderWidth = 2.0
                     imageView.layer.borderColor = UIColor.black.cgColor
                     imageView.layer.cornerRadius = 5.0
                     imageView.clipsToBounds = true
                     view.addSubview(imageView)
 
-                    // Add pan gesture recognizer for draggable behavior
                     let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
                     imageView.addGestureRecognizer(panGesture)
                     imageView.isUserInteractionEnabled = true
 
-                    cardsCount += 1
-                    if cardsCount == 3 {
-                        currentX = startX
-                        currentY = startYMiddle
-                    } else if cardsCount == 8 {
-                        currentX = startX
-                        currentY = startYBottom
+                    if index % 2 == 1 {
+                        elevationOffset = 0
                     } else {
-                        currentX += cardWidth + spacing
+                        elevationOffset += 20
                     }
+
+                    cardsCurrentX += cardWidth - overlap
                 }
             }
         }
     }
 
+    
+
+
+
+//    @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+//        guard let cardImageView = gesture.view else { return }
+//
+//        if gesture.state == .began || gesture.state == .changed {
+//            let translation = gesture.translation(in: view)
+//            cardImageView.center = CGPoint(x: cardImageView.center.x + translation.x, y: cardImageView.center.y + translation.y)
+//            gesture.setTranslation(CGPoint.zero, in: view)
+//        }
+//    }
+
+    
+    
     @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
-        guard let cardImageView = gesture.view else { return }
-        
+        guard let cardImageView = gesture.view as? UIImageView else { return }
         if gesture.state == .began || gesture.state == .changed {
             let translation = gesture.translation(in: view)
             cardImageView.center = CGPoint(x: cardImageView.center.x + translation.x, y: cardImageView.center.y + translation.y)
             gesture.setTranslation(CGPoint.zero, in: view)
         }
+
+        if gesture.state == .ended {
+//            print(spotViews)
+
+            // Find the nearest spotView
+            print(cardImageView.center)
+            var nearestSpotView: UIView?
+
+            for spotView in spotViews {
+                if cardImageView.frame.intersects(spotView.frame) {
+                    nearestSpotView = spotView
+                    break
+                }
+            }
+
+            // Animate the card to snap into the nearest spotView
+            UIView.animate(withDuration: 0.3) {
+                if let snapToSpotView = nearestSpotView {
+                    cardImageView.center = snapToSpotView.center
+                }
+//                else {
+//                    // If no spotView is nearby, return the card to its original position
+//                    cardImageView.frame = CGRect(x: cardsCurrentX, y: cardsStartY - elevationOffset, width: cardWidth, height: cardHeight)
+//                }
+            }
+        }
     }
+
 
 
     func createRoom(completion: @escaping ([Int], Int) -> Void) {
